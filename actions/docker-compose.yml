@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: book
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ../initdb/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql:ro
+    ports:
+      - "5432:5432"
+
+  app:
+    build:
+      context: ..
+      dockerfile: actions/Dockerfile
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: book
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_SCHEMA: bookstore
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../app:/app/app:ro
+
+volumes:
+  db_data:
